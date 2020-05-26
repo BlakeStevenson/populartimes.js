@@ -66,4 +66,3 @@ async function getPopularTimes(placeId) {
     }
     return out;
 }
-getPopularTimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs").then(out => console.log(out));
