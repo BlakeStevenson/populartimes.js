@@ -2,11 +2,19 @@
 Find the popular times of a location by scraping Google Maps.
 
 ## Usage
+
+### Install
+```
+npm install populartimes.js
+```
+
+### Example
 ```
 const populartimes = require('populartimes.js');
 populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs").then(out => console.log(out));
 ```
 (where ChIJEVBPhRQtTIYR9Qn5LawiZIs is a Google Maps place ID).
+
 ### Output
 ```
 {
