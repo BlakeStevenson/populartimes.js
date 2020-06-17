@@ -29,7 +29,7 @@ async function sendRequest(htmlUrl, params) {
     return data;
 }
 
-async function getPopularTimes(placeId) {
+module.exports = async function getPopularTimes(placeId) {
     // get raw html
     const rawData = await sendRequest(getHtmlUrl(placeId));
     // parse html
