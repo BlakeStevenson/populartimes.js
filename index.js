@@ -1,7 +1,7 @@
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const puppeteer = require('puppeteer');
-//https://www.google.com/maps/place/?q=place_id:ChIJEVBPhRQtTIYR9Qn5LawiZIs
+//https://www.google.com/maps/place/?q=place_id:ChIJqRNf_2qVwoAR8LxgjIId7Qw
 
 function getHtmlUrl(placeId) {
     return `https://www.google.com/maps/place/?q=place_id:${placeId}`;
@@ -50,7 +50,8 @@ module.exports = async function getPopularTimes(placeId) {
             let parts = hr.split(" ");
             if(parts[0] === "Currently") {
                 out.now = {
-                    percent: parts[4],
+                    currently: parts[1],
+                    usually: parts[4]
                 }
             } else {
                 let percent = parts[0];
