@@ -20,9 +20,20 @@ function getDayName(index) {
     return days[index];
 }
 
-async function sendRequest(htmlUrl, params) {
-    const browser = await puppeteer.launch();
+async function sendRequest(htmlUrl) {
+    const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
+
+    await page.setRequestInterception(true);
+    page.on('request', (req) => {
+        if(req.resourceType() === 'image' || req.resourceType() === 'stylesheet' || req.resourceType() === 'font'){
+            req.abort();
+        }
+        else {
+            req.continue();
+        }
+    });
+
     await page.goto(htmlUrl, {waitUntil: 'networkidle2'});
     const data = await page.evaluate(() => document.querySelector('*').outerHTML);
     await browser.close();
