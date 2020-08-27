@@ -220,7 +220,7 @@ populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{fillMissing: true}).then(out => cons
 
 Expects `boolean`.
 
-Fills in missing hours in the array. 
+Converts times to military time (24hr) format. 
 
 ##### Example
 
@@ -232,12 +232,7 @@ populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{fillMissing: true, militaryTime: tru
   saturday: [
     { percent: '0%', hour: '0' },
     { percent: '0%', hour: '1' },
-    { percent: '0%', hour: '2' },
-    { percent: '0%', hour: '3' },
-    { percent: '0%', hour: '4' },
-    { percent: '0%', hour: '5' },
-    { percent: '0%', hour: '6' },
-    { percent: '0%', hour: '7' },
+    ....
     { percent: '23%', hour: '8' },
     { percent: '39%', hour: '9' },
     { percent: '55%', hour: '10' },
@@ -248,11 +243,35 @@ populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{fillMissing: true, militaryTime: tru
     { percent: '77%', hour: '15' },
     { percent: '65%', hour: '16' },
     { percent: '48%', hour: '17' },
-    { percent: '0%', hour: '18' },
-    { percent: '0%', hour: '19' },
-    { percent: '0%', hour: '20' },
-    { percent: '0%', hour: '21' },
-    { percent: '0%', hour: '22' },
-    { percent: '0%', hour: '23' }
+    ....
+  ]
+```
+
+#### integer (default: `false`)
+
+Expects `boolean`.
+
+Converts string values into integers. The percentage value will be converted to a value between `0` and `100`.
+
+##### Example
+
+```
+populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{militaryTime: true, integer: true}).then(out => console.log(out));
+```
+
+```
+  saturday: [
+    ....
+    { percent: 23, hour: 8 },
+    { percent: 39, hour: 9 },
+    { percent: 55, hour: 10 },
+    { percent: 68, hour: 11 },
+    { percent: 76, hour: 12 },
+    { percent: 80, hour: 13 },
+    { percent: 81, hour: 14 },
+    { percent: 77, hour: 15 },
+    { percent: 65, hour: 16 },
+    { percent: 48, hour: 17 },
+    ....
   ]
 ```

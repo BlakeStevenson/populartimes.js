@@ -50,12 +50,12 @@ function convertTo24(hoursObject) {
     }
 }
 
-// module.exports = async 
-async function getPopularTimes(placeId, options) {
+module.exports = async function getPopularTimes(placeId, options) {
     // set options
     let defaultOptions = {
         fillMissing: false,
-        militaryTime: false
+        militaryTime: false,
+        integer: true
     };
     options = { ...defaultOptions, ...options };
     // get raw html
@@ -90,7 +90,6 @@ async function getPopularTimes(placeId, options) {
                 }
             }
         };
-
         let j = 0;
         for (let hour of hours) {
             let hr = hour.getAttribute("aria-label");
@@ -125,10 +124,15 @@ async function getPopularTimes(placeId, options) {
                 j++;
             }
         }
+        // handles integer option
+        if(options.integer) {
+            for(let hoursObject of hoursInDay) {
+                hoursObject.hour = parseInt(hoursObject.hour);
+                hoursObject.percent = parseInt(hoursObject.percent.replace('%'))
+            }
+        };
         out[getDayName(i)] = hoursInDay;
         i++;
     }
     return out;
 }
-
-getPopularTimes('ChIJaSv_6gaZ4jARnbiUVn6Z_YY', { fillMissing: true, militaryTime: true }).then(out => console.log(out));
