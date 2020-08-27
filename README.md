@@ -161,3 +161,98 @@ populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs").then(out => console.log(out));
 }
 
 ```
+
+### Options
+
+`populartimes` accepts an options object argument for modifying the data output.
+
+#### Example
+
+```
+let options = {
+  fillMissing: true
+};
+populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{fillMissing: true}).then(out => console.log(out));
+```
+
+#### fillMissing (default: `false`)
+
+Expects `boolean`.
+
+Fills in missing hours in the array. 
+
+##### Example
+
+```
+populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{fillMissing: true}).then(out => console.log(out));
+```
+
+```
+  saturday: [
+    { percent: '0%', hour: '0', meridiem: 'AM' },
+    { percent: '0%', hour: '1', meridiem: 'AM' },
+    { percent: '0%', hour: '2', meridiem: 'AM' },
+    { percent: '0%', hour: '3', meridiem: 'AM' },
+    { percent: '0%', hour: '4', meridiem: 'AM' },
+    { percent: '0%', hour: '5', meridiem: 'AM' },
+    { percent: '0%', hour: '6', meridiem: 'AM' },
+    { percent: '0%', hour: '7', meridiem: 'AM' },
+    { percent: '23%', hour: '8', meridiem: 'AM' },
+    { percent: '39%', hour: '9', meridiem: 'AM' },
+    { percent: '55%', hour: '10', meridiem: 'AM' },
+    { percent: '68%', hour: '11', meridiem: 'AM' },
+    { percent: '76%', hour: '12', meridiem: 'PM' },
+    { percent: '80%', hour: '1', meridiem: 'PM' },
+    { percent: '81%', hour: '2', meridiem: 'PM' },
+    { percent: '77%', hour: '3', meridiem: 'PM' },
+    { percent: '65%', hour: '4', meridiem: 'PM' },
+    { percent: '48%', hour: '5', meridiem: 'PM' },
+    { percent: '0%', hour: '6', meridiem: 'PM' },
+    { percent: '0%', hour: '7', meridiem: 'PM' },
+    { percent: '0%', hour: '8', meridiem: 'PM' },
+    { percent: '0%', hour: '9', meridiem: 'PM' },
+    { percent: '0%', hour: '10', meridiem: 'PM' },
+    { percent: '0%', hour: '11', meridiem: 'PM' }
+  ]
+```
+
+#### militaryTime (default: `false`)
+
+Expects `boolean`.
+
+Fills in missing hours in the array. 
+
+##### Example
+
+```
+populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{fillMissing: true, militaryTime: true}).then(out => console.log(out));
+```
+
+```
+  saturday: [
+    { percent: '0%', hour: '0' },
+    { percent: '0%', hour: '1' },
+    { percent: '0%', hour: '2' },
+    { percent: '0%', hour: '3' },
+    { percent: '0%', hour: '4' },
+    { percent: '0%', hour: '5' },
+    { percent: '0%', hour: '6' },
+    { percent: '0%', hour: '7' },
+    { percent: '23%', hour: '8' },
+    { percent: '39%', hour: '9' },
+    { percent: '55%', hour: '10' },
+    { percent: '68%', hour: '11' },
+    { percent: '76%', hour: '12' },
+    { percent: '80%', hour: '13' },
+    { percent: '81%', hour: '14' },
+    { percent: '77%', hour: '15' },
+    { percent: '65%', hour: '16' },
+    { percent: '48%', hour: '17' },
+    { percent: '0%', hour: '18' },
+    { percent: '0%', hour: '19' },
+    { percent: '0%', hour: '20' },
+    { percent: '0%', hour: '21' },
+    { percent: '0%', hour: '22' },
+    { percent: '0%', hour: '23' }
+  ]
+```
