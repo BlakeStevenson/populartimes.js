@@ -220,7 +220,7 @@ populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{fillMissing: true}).then(out => cons
 
 Expects `boolean`.
 
-Fills in missing hours in the array. 
+Converts times to military time (24hr) format. 
 
 ##### Example
 
