@@ -26,7 +26,7 @@ async function sendRequest(htmlUrl) {
 
     await page.setRequestInterception(true);
     page.on('request', (req) => {
-        if(req.resourceType() === 'image' || req.resourceType() === 'stylesheet' || req.resourceType() === 'font'){
+        if (req.resourceType() === 'image' || req.resourceType() === 'stylesheet' || req.resourceType() === 'font') {
             req.abort();
         }
         else {
@@ -34,18 +34,30 @@ async function sendRequest(htmlUrl) {
         }
     });
 
-    await page.goto(htmlUrl, {waitUntil: 'networkidle2'});
+    await page.goto(htmlUrl, { waitUntil: 'networkidle2' });
     const data = await page.evaluate(() => document.querySelector('*').outerHTML);
     await browser.close();
     return data;
 }
 
-module.exports = async function getPopularTimes(placeId,options) {
+function convertTo24(hoursObject) {
+    let { percent, hour, meridiem } = hoursObject;
+    if (hour == '12' || meridiem != 'PM') {
+        return { percent, hour }
+    } else if (hour !== '12') {
+        hour = (parseInt(hour) + 12).toString();
+        return { percent, hour }
+    }
+}
+
+// module.exports = async 
+async function getPopularTimes(placeId, options) {
     // set options
     let defaultOptions = {
-        fillMissing: false
+        fillMissing: false,
+        militaryTime: false
     };
-    options = {...defaultOptions,...options};
+    options = { ...defaultOptions, ...options };
     // get raw html
     const rawData = await sendRequest(getHtmlUrl(placeId));
     // parse html
@@ -55,27 +67,35 @@ module.exports = async function getPopularTimes(placeId,options) {
     // loop through the days
     const out = {};
     let i = 0;
-    for(let day of days) {
+    for (let day of days) {
         // get hours in a day
         const hours = day.getElementsByClassName("section-popular-times-bar");
         // loop through the hours
         let hoursInDay = [];
-        if(options.fillMissing === true) {
-            for(let d = 0;d<24;d++) {
-                if(d<12) {
-                    hoursInDay.push({percent: '0%',hour: d.toString(),meridiem:'AM'})
-                } else if (d===12){
-                    hoursInDay.push({percent: '0%',hour: d.toString(),meridiem:'PM'})
-                } else if (d>12) {
-                    hoursInDay.push({percent: '0%',hour: (d-12).toString(),meridiem:'PM'})
+        if (options.fillMissing === true) {
+            if (options.militaryTime) {
+                for (let d = 0; d < 24; d++) {
+                    hoursInDay.push({ percent: '0%', hour: d.toString() })
+                }
+            } else {
+                // if not 24hour format, use 12hr format by default
+                for (let d = 0; d < 24; d++) {
+                    if (d < 12) {
+                        hoursInDay.push({ percent: '0%', hour: d.toString(), meridiem: 'AM' })
+                    } else if (d === 12) {
+                        hoursInDay.push({ percent: '0%', hour: d.toString(), meridiem: 'PM' })
+                    } else if (d > 12) {
+                        hoursInDay.push({ percent: '0%', hour: (d - 12).toString(), meridiem: 'PM' })
+                    }
                 }
             }
         };
+
         let j = 0;
-        for(let hour of hours) {
+        for (let hour of hours) {
             let hr = hour.getAttribute("aria-label");
             let parts = hr.split(" ");
-            if(parts[0] === "Currently") {
+            if (parts[0] === "Currently") {
                 out.now = {
                     currently: parts[1],
                     usually: parts[4]
@@ -84,14 +104,23 @@ module.exports = async function getPopularTimes(placeId,options) {
                 let percent = parts[0];
                 let hour = parts[3];
                 let meridiem = parts[4].replace(".", "");
-                
-                if(options.fillMissing === true) {
-                    let index = hoursInDay.findIndex(hoursObject=>{
-                        return (hoursObject.hour === hour && hoursObject.meridiem === meridiem)
+                let hoursEndObject = { percent, hour, meridiem };
+                // if 24 hour format, convert it to 24 hour format
+                if (options.militaryTime) {
+                    hoursEndObject = convertTo24(hoursEndObject);
+                    hour = hoursEndObject.hour
+                }
+                if (options.fillMissing === true) {
+                    let index = hoursInDay.findIndex(hoursObject => {
+                        if (options.militaryTime) {
+                            return (hoursObject.hour === hour)
+                        } else {
+                            return (hoursObject.hour === hour && hoursObject.meridiem === meridiem)
+                        }
                     })
-                    hoursInDay[index] = {percent, hour, meridiem};
+                    hoursInDay[index] = hoursEndObject;
                 } else {
-                    hoursInDay[j] = {percent, hour, meridiem};
+                    hoursInDay[j] = hoursEndObject;
                 }
                 j++;
             }
@@ -101,3 +130,5 @@ module.exports = async function getPopularTimes(placeId,options) {
     }
     return out;
 }
+
+getPopularTimes('ChIJaSv_6gaZ4jARnbiUVn6Z_YY', { fillMissing: true, militaryTime: true }).then(out => console.log(out));

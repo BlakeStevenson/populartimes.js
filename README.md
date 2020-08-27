@@ -215,3 +215,44 @@ populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{fillMissing: true}).then(out => cons
     { percent: '0%', hour: '11', meridiem: 'PM' }
   ]
 ```
+
+#### militaryTime (default: `false`)
+
+Expects `boolean`.
+
+Fills in missing hours in the array. 
+
+##### Example
+
+```
+populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{fillMissing: true, militaryTime: true}).then(out => console.log(out));
+```
+
+```
+  saturday: [
+    { percent: '0%', hour: '0' },
+    { percent: '0%', hour: '1' },
+    { percent: '0%', hour: '2' },
+    { percent: '0%', hour: '3' },
+    { percent: '0%', hour: '4' },
+    { percent: '0%', hour: '5' },
+    { percent: '0%', hour: '6' },
+    { percent: '0%', hour: '7' },
+    { percent: '23%', hour: '8' },
+    { percent: '39%', hour: '9' },
+    { percent: '55%', hour: '10' },
+    { percent: '68%', hour: '11' },
+    { percent: '76%', hour: '12' },
+    { percent: '80%', hour: '13' },
+    { percent: '81%', hour: '14' },
+    { percent: '77%', hour: '15' },
+    { percent: '65%', hour: '16' },
+    { percent: '48%', hour: '17' },
+    { percent: '0%', hour: '18' },
+    { percent: '0%', hour: '19' },
+    { percent: '0%', hour: '20' },
+    { percent: '0%', hour: '21' },
+    { percent: '0%', hour: '22' },
+    { percent: '0%', hour: '23' }
+  ]
+```
