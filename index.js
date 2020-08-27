@@ -40,7 +40,12 @@ async function sendRequest(htmlUrl) {
     return data;
 }
 
-module.exports = async function getPopularTimes(placeId) {
+module.exports = async function getPopularTimes(placeId,options) {
+    // set options
+    let defaultOptions = {
+        fillMissing: false
+    };
+    options = {...defaultOptions,...options};
     // get raw html
     const rawData = await sendRequest(getHtmlUrl(placeId));
     // parse html
@@ -55,6 +60,17 @@ module.exports = async function getPopularTimes(placeId) {
         const hours = day.getElementsByClassName("section-popular-times-bar");
         // loop through the hours
         let hoursInDay = [];
+        if(options.fillMissing === true) {
+            for(let d = 0;d<24;d++) {
+                if(d<12) {
+                    hoursInDay.push({percent: '0%',hour: d.toString(),meridiem:'AM'})
+                } else if (d===12){
+                    hoursInDay.push({percent: '0%',hour: d.toString(),meridiem:'PM'})
+                } else if (d>12) {
+                    hoursInDay.push({percent: '0%',hour: (d-12).toString(),meridiem:'PM'})
+                }
+            }
+        };
         let j = 0;
         for(let hour of hours) {
             let hr = hour.getAttribute("aria-label");
@@ -68,8 +84,15 @@ module.exports = async function getPopularTimes(placeId) {
                 let percent = parts[0];
                 let hour = parts[3];
                 let meridiem = parts[4].replace(".", "");
-
-                hoursInDay[j] = {percent, hour, meridiem};
+                
+                if(options.fillMissing === true) {
+                    let index = hoursInDay.findIndex(hoursObject=>{
+                        return (hoursObject.hour === hour && hoursObject.meridiem === meridiem)
+                    })
+                    hoursInDay[index] = {percent, hour, meridiem};
+                } else {
+                    hoursInDay[j] = {percent, hour, meridiem};
+                }
                 j++;
             }
         }
