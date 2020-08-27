@@ -50,8 +50,7 @@ function convertTo24(hoursObject) {
     }
 }
 
-// module.exports = async 
-async function getPopularTimes(placeId, options) {
+module.exports = async function getPopularTimes(placeId, options) {
     // set options
     let defaultOptions = {
         fillMissing: false,
@@ -91,7 +90,6 @@ async function getPopularTimes(placeId, options) {
                 }
             }
         };
-
         let j = 0;
         for (let hour of hours) {
             let hr = hour.getAttribute("aria-label");
@@ -138,5 +136,3 @@ async function getPopularTimes(placeId, options) {
     }
     return out;
 }
-
-getPopularTimes('ChIJaSv_6gaZ4jARnbiUVn6Z_YY', { fillMissing: true, militaryTime: true, integer: true }).then(out => console.log(out));
