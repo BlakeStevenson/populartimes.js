@@ -99,6 +99,8 @@ module.exports = async function getPopularTimes(placeId, options) {
                     currently: parts[1],
                     usually: parts[4]
                 }
+            } if(parts.length < 5) {
+                // if no hours, do nothing
             } else {
                 let percent = parts[0];
                 let hour = parts[3];
