@@ -20,8 +20,11 @@ function getDayName(index) {
     return days[index];
 }
 
-async function sendRequest(htmlUrl) {
-    const browser = await puppeteer.launch();
+async function sendRequest(htmlUrl, puppeteerOptions) {
+    let defaultPuppeteerOptions = {};
+    puppeteerOptions = { ...defaultPuppeteerOptions, ...puppeteerOptions }
+
+    const browser = await puppeteer.launch(puppeteerOptions);
     const page = await browser.newPage();
 
     await page.setRequestInterception(true);
@@ -55,11 +58,12 @@ module.exports = async function getPopularTimes(placeId, options) {
     let defaultOptions = {
         fillMissing: false,
         militaryTime: false,
-        integer: true
+        integer: true,
+        puppeteerOptions: {}
     };
     options = { ...defaultOptions, ...options };
     // get raw html
-    const rawData = await sendRequest(getHtmlUrl(placeId));
+    const rawData = await sendRequest(getHtmlUrl(placeId), options.puppeteerOptions);
     // parse html
     const body = new JSDOM(rawData);
     // get days of the week
@@ -99,7 +103,7 @@ module.exports = async function getPopularTimes(placeId, options) {
                     currently: parts[1],
                     usually: parts[4]
                 }
-            } if(parts.length < 5) {
+            } if (parts.length < 5) {
                 // if no hours, do nothing
             } else {
                 let percent = parts[0];
@@ -127,8 +131,8 @@ module.exports = async function getPopularTimes(placeId, options) {
             }
         }
         // handles integer option
-        if(options.integer) {
-            for(let hoursObject of hoursInDay) {
+        if (options.integer) {
+            for (let hoursObject of hoursInDay) {
                 hoursObject.hour = parseInt(hoursObject.hour);
                 hoursObject.percent = parseInt(hoursObject.percent.replace('%'))
             }

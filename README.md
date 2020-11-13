@@ -275,3 +275,15 @@ populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{militaryTime: true, integer: true}).
     ....
   ]
 ```
+
+#### puppeteerOptions (default: {}`)
+
+Expects an `object`.
+
+Passes options to the puppeteer module. For example, when deploying to heroku, you can set pass options to puppeteer to use `no-sandbox` mode.
+
+##### Example
+
+```
+populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{puppeteerOptions: { headless: true, args:['--no-sandbox', '--disable-setuid-sandbox'] }})
+```
