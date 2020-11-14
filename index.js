@@ -1,7 +1,7 @@
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const puppeteer = require('puppeteer');
-//https://www.google.com/maps/place/?q=place_id:ChIJqRNf_2qVwoAR8LxgjIId7Qw
+//https://www.google.com/maps/place/?q=place_id:ChIJc5KGoHXDyIARjRvuzlguft8
 
 function getHtmlUrl(placeId) {
     return `https://www.google.com/maps/place/?q=place_id:${placeId}`;
@@ -43,9 +43,12 @@ async function sendRequest(htmlUrl, puppeteerOptions) {
     return data;
 }
 
+// todo: there's a bug here
 function convertTo24(hoursObject) {
     let { percent, hour, meridiem } = hoursObject;
-    if (hour == '12' || meridiem != 'PM') {
+    if ((hour == '12' && meridiem == 'AM')) {
+        return { percent, hour: '0' }
+    } else if ((hour == '12' || meridiem != 'PM')) {
         return { percent, hour }
     } else if (hour !== '12') {
         hour = (parseInt(hour) + 12).toString();
@@ -53,7 +56,7 @@ function convertTo24(hoursObject) {
     }
 }
 
-module.exports = async function getPopularTimes(placeId, options) {
+getPopularTimes = async function (placeId, options) {
     // set options
     let defaultOptions = {
         fillMissing: false,
@@ -95,19 +98,28 @@ module.exports = async function getPopularTimes(placeId, options) {
             }
         };
         let j = 0;
-        for (let hour of hours) {
-            let hr = hour.getAttribute("aria-label");
+        // at here, the hoursInDay is just an empty element
+        let count = 0;
+        for (let hourEle of hours) {
+            let hr = hourEle.getAttribute("aria-label");
             let parts = hr.split(" ");
+
             if (parts[0] === "Currently") {
                 out.now = {
                     currently: parts[1],
                     usually: parts[4]
                 }
-            } if (parts.length < 5) {
+                
+            } 
+
+            if (parts.length < 5) {
                 // if no hours, do nothing
             } else {
                 let percent = parts[0];
                 let hour = parts[3];
+                if(hour === 'usually') {
+                    // todo: handle when it's "usually"
+                }
                 let meridiem = parts[4].replace(".", "");
                 let hoursEndObject = { percent, hour, meridiem };
                 // if 24 hour format, convert it to 24 hour format
@@ -117,6 +129,7 @@ module.exports = async function getPopularTimes(placeId, options) {
                 }
                 if (options.fillMissing === true) {
                     let index = hoursInDay.findIndex(hoursObject => {
+                        // this is where the index is getting messed up
                         if (options.militaryTime) {
                             return (hoursObject.hour === hour)
                         } else {
@@ -140,5 +153,8 @@ module.exports = async function getPopularTimes(placeId, options) {
         out[getDayName(i)] = hoursInDay;
         i++;
     }
+
     return out;
 }
+
+getPopularTimes('ChIJc5KGoHXDyIARjRvuzlguft8', { militaryTime: true, fillMissing: true } )
