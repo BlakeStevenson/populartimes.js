@@ -98,8 +98,11 @@ getPopularTimes = async function (placeId, options) {
             }
         };
         let j = 0;
-        // at here, the hoursInDay is just an empty element
-        let count = 0;
+
+        // needed to fix issue where google doesn't show hour for current times
+        let hoursTracker;
+        let meridiemTracker;
+
         for (let hourEle of hours) {
             let hr = hourEle.getAttribute("aria-label");
             let parts = hr.split(" ");
@@ -109,18 +112,30 @@ getPopularTimes = async function (placeId, options) {
                     currently: parts[1],
                     usually: parts[4]
                 }
-                
-            } 
+            }
 
             if (parts.length < 5) {
                 // if no hours, do nothing
             } else {
                 let percent = parts[0];
                 let hour = parts[3];
-                if(hour === 'usually') {
-                    // todo: handle when it's "usually"
-                }
                 let meridiem = parts[4].replace(".", "");
+
+                    if (hour !== 'usually') {
+                        hoursTracker = hour;
+                        meridiemTracker = meridiem;
+                    } else {
+                        percent = parts[4];
+                        hour = (parseInt(hoursTracker) + 1).toString();
+                        if(hoursTracker === '11' && meridiemTracker === 'AM') {
+                            meridiem = 'PM'
+                        } else if (hoursTracker === '11' && meridiemTracker === 'PM') {
+                            meridiem = 'AM'
+                        } else {
+                            meridiem = meridiemTracker
+                        }
+                    }
+
                 let hoursEndObject = { percent, hour, meridiem };
                 // if 24 hour format, convert it to 24 hour format
                 if (options.militaryTime) {
@@ -154,7 +169,7 @@ getPopularTimes = async function (placeId, options) {
         i++;
     }
 
+    console.log(out)
     return out;
 }
-
-getPopularTimes('ChIJc5KGoHXDyIARjRvuzlguft8', { militaryTime: true, fillMissing: true } )
+getPopularTimes('ChIJc5KGoHXDyIARjRvuzlguft8', { militaryTime: true, fillMissing: true })
