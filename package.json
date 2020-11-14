@@ -1,6 +1,6 @@
 {
   "name": "populartimes.js",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Get the popular times of a place by scraping Google Maps.",
   "main": "index.js",
   "scripts": {

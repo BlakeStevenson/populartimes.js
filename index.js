@@ -56,7 +56,7 @@ function convertTo24(hoursObject) {
     }
 }
 
-getPopularTimes = async function (placeId, options) {
+module.exports = async function getPopularTimes(placeId, options) {	
     // set options
     let defaultOptions = {
         fillMissing: false,
@@ -169,7 +169,5 @@ getPopularTimes = async function (placeId, options) {
         i++;
     }
 
-    console.log(out)
     return out;
 }
-getPopularTimes('ChIJc5KGoHXDyIARjRvuzlguft8', { militaryTime: true, fillMissing: true })
