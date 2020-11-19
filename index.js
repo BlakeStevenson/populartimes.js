@@ -62,7 +62,8 @@ module.exports = async function getPopularTimes(placeId, options) {
         fillMissing: false,
         militaryTime: false,
         integer: true,
-        puppeteerOptions: {}
+        puppeteerOptions: {},
+        getCurrentTime: true
     };
     options = { ...defaultOptions, ...options };
     // get raw html
@@ -107,7 +108,7 @@ module.exports = async function getPopularTimes(placeId, options) {
             let hr = hourEle.getAttribute("aria-label");
             let parts = hr.split(" ");
 
-            if (parts[0] === "Currently") {
+            if (parts[0] === "Currently" && !!options.getCurrentTime) {
                 out.now = {
                     currently: parts[1],
                     usually: parts[4]
