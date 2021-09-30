@@ -175,6 +175,44 @@ let options = {
 populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{fillMissing: true}).then(out => console.log(out));
 ```
 
+####
+
+#### Scraper options (default: `{engine: "puppeteer", config: {} }`)
+
+Expects an `object`.
+
+Passes configuration to the scraper. You can specify either of the following engines:
+
+- `puppeteer`
+- `ScraperAPI`
+
+You may have to provide an API key depending on the engine.
+
+##### puppeteer configuration
+
+// todo
+
+##### ScraperAPI configuration
+
+ScraperAPI documentation:
+https://www.scraperapi.com/documentation/
+
+```
+{
+  engine: "scraperapi",
+  config: {
+    apikey: "your_scraper_api_key",
+    render: true  // optional, defaults to true
+  }
+}
+```
+
+##### Example
+
+```
+populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{puppeteerOptions: { headless: true, args:['--no-sandbox', '--disable-setuid-sandbox'] }})
+```
+
 #### fillMissing (default: `false`)
 
 Expects `boolean`.
@@ -276,14 +314,6 @@ populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{militaryTime: true, integer: true}).
   ]
 ```
 
-#### puppeteerOptions (default: {}`)
+## Development
 
-Expects an `object`.
-
-Passes options to the puppeteer module. For example, when deploying to heroku, you can set pass options to puppeteer to use `no-sandbox` mode.
-
-##### Example
-
-```
-populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{puppeteerOptions: { headless: true, args:['--no-sandbox', '--disable-setuid-sandbox'] }})
-```
+When developing in this package, you can run tests using the `/tests.js` file. Use either `node tests` or `npm run tests`.
