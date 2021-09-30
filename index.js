@@ -1,7 +1,11 @@
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const puppeteer = require('puppeteer');
-//https://www.google.com/maps/place/?q=place_id:ChIJc5KGoHXDyIARjRvuzlguft8
+const axios = require('axios')
+const { Client } = require("@googlemaps/google-maps-services-js");
+
+// URL you can test:
+// https://www.google.com/maps/place/?q=place_id:ChIJc5KGoHXDyIARjRvuzlguft8
 
 function getHtmlUrl(placeId) {
     return `https://www.google.com/maps/place/?q=place_id:${placeId}`;
@@ -20,30 +24,90 @@ function getDayName(index) {
     return days[index];
 }
 
-async function sendRequest(htmlUrl, puppeteerOptions) {
-    let defaultPuppeteerOptions = {};
-    puppeteerOptions = { ...defaultPuppeteerOptions, ...puppeteerOptions }
 
-    const browser = await puppeteer.launch(puppeteerOptions);
-    const page = await browser.newPage();
+function getPlaceName(place_id, google_places_api_key) {
 
-    await page.setRequestInterception(true);
-    page.on('request', (req) => {
-        if (req.resourceType() === 'image' || req.resourceType() === 'stylesheet' || req.resourceType() === 'font') {
-            req.abort();
-        }
-        else {
-            req.continue();
-        }
-    });
-
-    await page.goto(htmlUrl, { waitUntil: 'networkidle2' });
-    const data = await page.evaluate(() => document.querySelector('*').outerHTML);
-    await browser.close();
-    return data;
+    const googleSearch = new Client({})
+    return googleSearch.placeDetails({
+        params: {
+            place_id: place_id,
+            fields: ["name"],
+            key: google_places_api_key,
+        },
+        timeout: 1000, // milliseconds
+    })
+        .then((r) => {
+            return (r.data.result.name)
+        })
+        .catch((e) => {
+            console.error('No place found');
+            return null;
+        });
 }
 
-// todo: there's a bug here
+async function sendRequest(htmlUrl, scraperSettings) {
+
+
+    // scraperAPI.io
+    if (scraperSettings.engine.toLowerCase() === "scraperapi") {
+        let config = {
+            render: true
+        };
+        config = { ...config, ...scraperSettings.config };
+
+        // validation
+        if (!config.apikey) {
+            let error = 'Error: ScraperAPI key is missing. Please check the populartimes.js documentation'
+            console.error(error)
+            return error
+        }
+
+        // continue
+        axiosOptions = {
+            method: 'get',
+            url: `http://api.scraperapi.com?api_key=${config.apikey}&render=${config.render}&country_code=us&url=${encodeURIComponent(htmlUrl + "&region=us&language=us")}`
+        }
+
+        return axios(axiosOptions).then(data => {
+            if (!!data.data) {
+                return data.data
+            } else {
+                return data
+            }
+        }).catch(err => {
+            console.log(err.status)
+            console.log(err.statusText)
+            return err
+        })
+    }
+
+    // puppeteer
+    else if (scraperSettings.engine === "puppeteer") {
+        let config = {};
+        config = { ...config, ...scraperSettings.config }
+
+        const browser = await puppeteer.launch(config);
+        const page = await browser.newPage();
+
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            if (req.resourceType() === 'image' || req.resourceType() === 'stylesheet' || req.resourceType() === 'font') {
+                req.abort();
+            }
+            else {
+                req.continue();
+            }
+        });
+
+        await page.goto(htmlUrl, { waitUntil: 'networkidle2' });
+        const data = await page.evaluate(() => document.querySelector('*').outerHTML);
+        await browser.close();
+
+
+        return data;
+    }
+}
+
 function convertTo24(hoursObject) {
     let { percent, hour, meridiem } = hoursObject;
     if ((hour == '12' && meridiem == 'AM')) {
@@ -56,28 +120,61 @@ function convertTo24(hoursObject) {
     }
 }
 
-module.exports = async function getPopularTimes(placeId, options) {	
+module.exports = async function getPopularTimes(placeId, functionOptions) {
     // set options
-    let defaultOptions = {
+
+    let options = {
         fillMissing: false,
         militaryTime: false,
         integer: true,
-        puppeteerOptions: {},
-        getCurrentTime: true
+        getCurrentTime: true,
+        scraperSettings: {
+            engine: "puppeteer",
+            config: {}
+        }
     };
-    options = { ...defaultOptions, ...options };
+    options = { ...options, ...functionOptions };
+
     // get raw html
-    const rawData = await sendRequest(getHtmlUrl(placeId), options.puppeteerOptions);
+    const rawData = await sendRequest(getHtmlUrl(placeId), options.scraperSettings);
     // parse html
     const body = new JSDOM(rawData);
     // get days of the week
-    const days = body.window.document.getElementsByClassName("section-popular-times-graph");
+
+    let days;
+    // puppeteer
+    if (options.scraperSettings.engine === "puppeteer") {
+        days = body.window.document.getElementsByClassName("section-popular-times-graph");
+    } else {
+        // scraper API way
+
+        const placeName = await getPlaceName(placeId, options.scraperSettings.config.google_places_api_key);
+
+        if (!placeName) {
+            console.error(`Did not find a place name using place_id: ${place_id}`)
+            return {}
+        } else {
+            console.log(placeName)
+            days = body.window.document.querySelectorAll(`div[aria-label="Popular times at ${placeName}"] > div:last-of-type > div`);
+        }
+    }
+
     // loop through the days
     const out = {};
     let i = 0;
     for (let day of days) {
         // get hours in a day
-        const hours = day.getElementsByClassName("section-popular-times-bar");
+        // gets the bar for the array
+
+        // scraper API way, might work for puppeteer too
+        let hours;
+        // puppeteer
+        if (options.scraperSettings.engine === "puppeteer") {
+            hours = day.getElementsByClassName("section-popular-times-bar");
+        } else {
+            // scraper API way
+            hours = day.querySelectorAll('div[aria-label]');
+        }
         // loop through the hours
         let hoursInDay = [];
         if (options.fillMissing === true) {
@@ -122,20 +219,20 @@ module.exports = async function getPopularTimes(placeId, options) {
                 let hour = parts[3];
                 let meridiem = parts[4].replace(".", "");
 
-                    if (hour !== 'usually') {
-                        hoursTracker = hour;
-                        meridiemTracker = meridiem;
+                if (hour !== 'usually') {
+                    hoursTracker = hour;
+                    meridiemTracker = meridiem;
+                } else {
+                    percent = parts[4];
+                    hour = (parseInt(hoursTracker) + 1).toString();
+                    if (hoursTracker === '11' && meridiemTracker === 'AM') {
+                        meridiem = 'PM'
+                    } else if (hoursTracker === '11' && meridiemTracker === 'PM') {
+                        meridiem = 'AM'
                     } else {
-                        percent = parts[4];
-                        hour = (parseInt(hoursTracker) + 1).toString();
-                        if(hoursTracker === '11' && meridiemTracker === 'AM') {
-                            meridiem = 'PM'
-                        } else if (hoursTracker === '11' && meridiemTracker === 'PM') {
-                            meridiem = 'AM'
-                        } else {
-                            meridiem = meridiemTracker
-                        }
+                        meridiem = meridiemTracker
                     }
+                }
 
                 let hoursEndObject = { percent, hour, meridiem };
                 // if 24 hour format, convert it to 24 hour format
@@ -170,5 +267,7 @@ module.exports = async function getPopularTimes(placeId, options) {
         i++;
     }
 
+    console.log('output is:')
+    console.log(out)
     return out;
 }

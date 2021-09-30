@@ -1,10 +1,11 @@
 {
   "name": "populartimes.js",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Get the popular times of a place by scraping Google Maps.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests",
+    "tests": "node tests"
   },
   "repository": {
     "type": "git",
@@ -24,7 +25,9 @@
   },
   "homepage": "https://github.com/blakestevenson/populartimes.js#readme",
   "dependencies": {
-    "jsdom": "^16.2.2",
+    "@googlemaps/google-maps-services-js": "^3.2.2",
+    "axios": "^0.21.4",
+    "jsdom": "^17.0.0",
     "puppeteer": "^3.1.0"
   }
 }
