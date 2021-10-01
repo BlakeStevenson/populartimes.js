@@ -110,7 +110,7 @@ async function sendRequest(htmlUrl, scraperSettings) {
 function convertTo24(hoursObject) {
     let { percent, hour, meridiem } = hoursObject;
     meridiem = meridiem.toLowerCase()
-    
+
     if ((hour == '12' && meridiem == 'am')) {
         return { percent, hour: '0' }
     } else if ((hour == '12' || meridiem != 'pm')) {
@@ -270,8 +270,16 @@ module.exports = async function getPopularTimes(placeId, functionOptions) {
         console.log('PlaceID: ',placeId)
         console.log('Options selected:')
         console.log(options)
+        if(options.scraperSettings.engine.toLowerCase() === 'scraperapi') {
+            console.log("ScraperAPI URL:")
+            console.log(`http://api.scraperapi.com?api_key=${options.scraperSettings.config.apikey}&render=${options.scraperSettings.config.render}&country_code=us&url=${encodeURIComponent(`https://www.google.com/maps/place/?q=place_id:${placeId}` + "&region=us&language=us&hl=en")}`)
+        }
         console.log('output: ')
         console.log(out)
+    }
+    if(!out) {
+        console.error('Problem running populartimes.js')
+        return null
     }
     return out;
 }
