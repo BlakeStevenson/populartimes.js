@@ -58,7 +58,6 @@ async function sendRequest(htmlUrl, scraperSettings) {
         // validation
         if (!config.apikey) {
             let error = 'Error: ScraperAPI key is missing. Please check the populartimes.js documentation'
-            console.error(error)
             return error
         }
 
@@ -75,8 +74,8 @@ async function sendRequest(htmlUrl, scraperSettings) {
                 return data
             }
         }).catch(err => {
-            console.log(err.status)
-            console.log(err.statusText)
+            console.error(err.status)
+            console.error(err.statusText)
             return err
         })
     }
@@ -134,7 +133,6 @@ module.exports = async function getPopularTimes(placeId, functionOptions) {
         }
     };
     options = { ...options, ...functionOptions };
-
     // get raw html
     const rawData = await sendRequest(getHtmlUrl(placeId), options.scraperSettings);
     // parse html
@@ -154,7 +152,6 @@ module.exports = async function getPopularTimes(placeId, functionOptions) {
             console.error(`Did not find a place name using place_id: ${place_id}`)
             return {}
         } else {
-            console.log(placeName)
             days = body.window.document.querySelectorAll(`div[aria-label="Popular times at ${placeName}"] > div:last-of-type > div`);
         }
     }
@@ -267,7 +264,12 @@ module.exports = async function getPopularTimes(placeId, functionOptions) {
         i++;
     }
 
-    console.log('output is:')
-    console.log(out)
+    if(!!options.debug) {
+        console.log('PlaceID: ',placeId)
+        console.log('Options selected:')
+        console.log(options)
+        console.log('output: ')
+        console.log(out)
+    }
     return out;
 }

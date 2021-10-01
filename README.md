@@ -201,7 +201,8 @@ https://www.scraperapi.com/documentation/
 {
   engine: "scraperapi",
   config: {
-    apikey: "your_scraper_api_key",
+    apikey: "your_scraper_api_key",   // required. Sign up at ScraperAPI.io
+    google_places_api_key: "google_places_api_key",   // required. Google API key requires places permissions
     render: true  // optional, defaults to true
   }
 }
@@ -312,6 +313,21 @@ populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{militaryTime: true, integer: true}).
     { percent: 48, hour: 17 },
     ....
   ]
+```
+
+#### debug (default: `false`)
+
+Outputs debugging information.
+
+##### Example
+
+```
+populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{debug: true}).then(out => console.log(out));
+```
+
+```
+output is:
+{}
 ```
 
 ## Development
