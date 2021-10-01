@@ -64,7 +64,7 @@ async function sendRequest(htmlUrl, scraperSettings) {
         // continue
         axiosOptions = {
             method: 'get',
-            url: `http://api.scraperapi.com?api_key=${config.apikey}&render=${config.render}&country_code=us&url=${encodeURIComponent(htmlUrl + "&region=us&language=us")}`
+            url: `http://api.scraperapi.com?api_key=${config.apikey}&render=${config.render}&country_code=us&url=${encodeURIComponent(htmlUrl + "&region=us&language=us&hl=en")}`
         }
 
         return axios(axiosOptions).then(data => {
