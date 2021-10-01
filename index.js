@@ -58,14 +58,13 @@ async function sendRequest(htmlUrl, scraperSettings) {
         // validation
         if (!config.apikey) {
             let error = 'Error: ScraperAPI key is missing. Please check the populartimes.js documentation'
-            console.error(error)
             return error
         }
 
         // continue
         axiosOptions = {
             method: 'get',
-            url: `http://api.scraperapi.com?api_key=${config.apikey}&render=${config.render}&country_code=us&url=${encodeURIComponent(htmlUrl + "&region=us&language=us")}`
+            url: `http://api.scraperapi.com?api_key=${config.apikey}&render=${config.render}&country_code=us&url=${encodeURIComponent(htmlUrl + "&region=us&language=us&hl=en")}`
         }
 
         return axios(axiosOptions).then(data => {
@@ -75,8 +74,8 @@ async function sendRequest(htmlUrl, scraperSettings) {
                 return data
             }
         }).catch(err => {
-            console.log(err.status)
-            console.log(err.statusText)
+            console.error(err.status)
+            console.error(err.statusText)
             return err
         })
     }
@@ -110,9 +109,11 @@ async function sendRequest(htmlUrl, scraperSettings) {
 
 function convertTo24(hoursObject) {
     let { percent, hour, meridiem } = hoursObject;
-    if ((hour == '12' && meridiem == 'AM')) {
+    meridiem = meridiem.toLowerCase()
+
+    if ((hour == '12' && meridiem == 'am')) {
         return { percent, hour: '0' }
-    } else if ((hour == '12' || meridiem != 'PM')) {
+    } else if ((hour == '12' || meridiem != 'pm')) {
         return { percent, hour }
     } else if (hour !== '12') {
         hour = (parseInt(hour) + 12).toString();
@@ -134,7 +135,6 @@ module.exports = async function getPopularTimes(placeId, functionOptions) {
         }
     };
     options = { ...options, ...functionOptions };
-
     // get raw html
     const rawData = await sendRequest(getHtmlUrl(placeId), options.scraperSettings);
     // parse html
@@ -154,7 +154,6 @@ module.exports = async function getPopularTimes(placeId, functionOptions) {
             console.error(`Did not find a place name using place_id: ${place_id}`)
             return {}
         } else {
-            console.log(placeName)
             days = body.window.document.querySelectorAll(`div[aria-label="Popular times at ${placeName}"] > div:last-of-type > div`);
         }
     }
@@ -186,11 +185,11 @@ module.exports = async function getPopularTimes(placeId, functionOptions) {
                 // if not 24hour format, use 12hr format by default
                 for (let d = 0; d < 24; d++) {
                     if (d < 12) {
-                        hoursInDay.push({ percent: '0%', hour: d.toString(), meridiem: 'AM' })
+                        hoursInDay.push({ percent: '0%', hour: d.toString(), meridiem: 'am' })
                     } else if (d === 12) {
-                        hoursInDay.push({ percent: '0%', hour: d.toString(), meridiem: 'PM' })
+                        hoursInDay.push({ percent: '0%', hour: d.toString(), meridiem: 'pm' })
                     } else if (d > 12) {
-                        hoursInDay.push({ percent: '0%', hour: (d - 12).toString(), meridiem: 'PM' })
+                        hoursInDay.push({ percent: '0%', hour: (d - 12).toString(), meridiem: 'pm' })
                     }
                 }
             }
@@ -225,10 +224,10 @@ module.exports = async function getPopularTimes(placeId, functionOptions) {
                 } else {
                     percent = parts[4];
                     hour = (parseInt(hoursTracker) + 1).toString();
-                    if (hoursTracker === '11' && meridiemTracker === 'AM') {
-                        meridiem = 'PM'
-                    } else if (hoursTracker === '11' && meridiemTracker === 'PM') {
-                        meridiem = 'AM'
+                    if (hoursTracker === '11' && meridiemTracker === 'am') {
+                        meridiem = 'pm'
+                    } else if (hoursTracker === '11' && meridiemTracker === 'pm') {
+                        meridiem = 'am'
                     } else {
                         meridiem = meridiemTracker
                     }
@@ -267,7 +266,20 @@ module.exports = async function getPopularTimes(placeId, functionOptions) {
         i++;
     }
 
-    console.log('output is:')
-    console.log(out)
+    if(!!options.debug) {
+        console.log('PlaceID: ',placeId)
+        console.log('Options selected:')
+        console.log(options)
+        if(options.scraperSettings.engine.toLowerCase() === 'scraperapi') {
+            console.log("ScraperAPI URL:")
+            console.log(`http://api.scraperapi.com?api_key=${options.scraperSettings.config.apikey}&render=${options.scraperSettings.config.render}&country_code=us&url=${encodeURIComponent(`https://www.google.com/maps/place/?q=place_id:${placeId}` + "&region=us&language=us&hl=en")}`)
+        }
+        console.log('output: ')
+        console.log(out)
+    }
+    if(!out) {
+        console.error('Problem running populartimes.js')
+        return null
+    }
     return out;
 }

@@ -3,7 +3,7 @@ const getPopularTimes = require('./index');
 testFunction = async () => {
     // testing scraperapi
     console.log('Testing scraperAPI first')
-    console.log(await getPopularTimes('ChIJc5KGoHXDyIARjRvuzlguft8', {
+    await getPopularTimes('ChIJc5KGoHXDyIARjRvuzlguft8', {
         scraperSettings: {
             engine: "scraperapi",
             config: {
@@ -12,16 +12,16 @@ testFunction = async () => {
                 google_places_api_key: "your_places_api_key"
             }
         }
-    }))
-    
+    })
+
     // testing puppeteer
     console.log('Testing puppeteer next');
-    console.log(await getPopularTimes('ChIJc5KGoHXDyIARjRvuzlguft8', {
+    await getPopularTimes('ChIJc5KGoHXDyIARjRvuzlguft8', {
         scraperSettings: {
             engine: "puppeteer",
             config: {}
         }
-    }))
-} 
+    })
+}
 
 testFunction();
