@@ -142,20 +142,14 @@ module.exports = async function getPopularTimes(placeId, functionOptions) {
     // get days of the week
 
     let days;
-    // puppeteer
-    if (options.scraperSettings.engine === "puppeteer") {
-        days = body.window.document.getElementsByClassName("section-popular-times-graph");
+
+    const placeName = await getPlaceName(placeId, options.scraperSettings.config.google_places_api_key);
+
+    if (!placeName) {
+        console.error(`Did not find a place name using place_id: ${place_id}`)
+        return {}
     } else {
-        // scraper API way
-
-        const placeName = await getPlaceName(placeId, options.scraperSettings.config.google_places_api_key);
-
-        if (!placeName) {
-            console.error(`Did not find a place name using place_id: ${place_id}`)
-            return {}
-        } else {
-            days = body.window.document.querySelectorAll(`div[aria-label="Popular times at ${placeName}"] > div:last-of-type > div`);
-        }
+        days = body.window.document.querySelectorAll(`div[aria-label="Popular times at ${placeName}"] > div:last-of-type > div`);
     }
 
     // loop through the days
@@ -165,15 +159,8 @@ module.exports = async function getPopularTimes(placeId, functionOptions) {
         // get hours in a day
         // gets the bar for the array
 
-        // scraper API way, might work for puppeteer too
         let hours;
-        // puppeteer
-        if (options.scraperSettings.engine === "puppeteer") {
-            hours = day.getElementsByClassName("section-popular-times-bar");
-        } else {
-            // scraper API way
-            hours = day.querySelectorAll('div[aria-label]');
-        }
+        hours = day.querySelectorAll('div[aria-label]');
         // loop through the hours
         let hoursInDay = [];
         if (options.fillMissing === true) {
@@ -266,18 +253,18 @@ module.exports = async function getPopularTimes(placeId, functionOptions) {
         i++;
     }
 
-    if(!!options.debug) {
-        console.log('PlaceID: ',placeId)
+    if (!!options.debug) {
+        console.log('PlaceID: ', placeId)
         console.log('Options selected:')
         console.log(options)
-        if(options.scraperSettings.engine.toLowerCase() === 'scraperapi') {
+        if (options.scraperSettings.engine.toLowerCase() === 'scraperapi') {
             console.log("ScraperAPI URL:")
             console.log(`http://api.scraperapi.com?api_key=${options.scraperSettings.config.apikey}&render=${options.scraperSettings.config.render}&country_code=us&url=${encodeURIComponent(`https://www.google.com/maps/place/?q=place_id:${placeId}` + "&region=us&language=us&hl=en")}`)
         }
         console.log('output: ')
         console.log(out)
     }
-    if(!out) {
+    if (!out) {
         console.error('Problem running populartimes.js')
         return null
     }

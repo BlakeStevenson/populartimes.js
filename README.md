@@ -188,9 +188,20 @@ Passes configuration to the scraper. You can specify either of the following eng
 
 You may have to provide an API key depending on the engine.
 
+All engines require a `google_places_api_key` in a `config` object. See the examples below.
+
 ##### puppeteer configuration
 
-// todo
+To use puppeteer, you will need to include your Google Maps API key with places permissions.
+
+```
+{
+  engine: "puppeteer",
+  config: {
+    google_places_api_key: "google_places_api_key",   // required. Google API key requires places permissions
+  }
+}
+```
 
 ##### ScraperAPI configuration
 

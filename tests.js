@@ -1,6 +1,7 @@
 const getPopularTimes = require('./index');
 
 testFunction = async () => {
+    
     // testing scraperapi
     console.log('Testing scraperAPI first')
     await getPopularTimes('ChIJc5KGoHXDyIARjRvuzlguft8', {
@@ -19,7 +20,9 @@ testFunction = async () => {
     await getPopularTimes('ChIJc5KGoHXDyIARjRvuzlguft8', {
         scraperSettings: {
             engine: "puppeteer",
-            config: {}
+            config: {
+                google_places_api_key: 
+            }
         }
     })
 }
