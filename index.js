@@ -149,7 +149,13 @@ module.exports = async function getPopularTimes(placeId, functionOptions) {
         console.error(`Did not find a place name using place_id: ${place_id}`)
         return {}
     } else {
+        if(placeName.indexOf(`"`) > -1) {
+            placeName = placeName.replace(/\"/g,'\\"')
+        }
         days = body.window.document.querySelectorAll(`div[aria-label="Popular times at ${placeName}"] > div:last-of-type > div`);
+        if(!!days) {
+            
+        }
     }
 
     // loop through the days
