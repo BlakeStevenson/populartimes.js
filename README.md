@@ -184,7 +184,7 @@ Expects an `object`.
 Passes configuration to the scraper. You can specify either of the following engines:
 
 - `puppeteer`
-- `ScraperAPI`
+- `ScraperAPI` (Note: To render Javascript, you must be on the [Business or Enterprise](https://www.scraperapi.com/pricing/) plan)
 
 You may have to provide an API key depending on the engine.
 
