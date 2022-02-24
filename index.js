@@ -7,8 +7,8 @@ const { Client } = require("@googlemaps/google-maps-services-js");
 // URL you can test:
 // https://www.google.com/maps/place/?q=place_id:ChIJc5KGoHXDyIARjRvuzlguft8
 
-function getHtmlUrl(placeId) {
-    return `https://www.google.com/maps/place/?q=place_id:${placeId}`;
+function getHtmlUrl(place_id) {
+    return `https://www.google.com/maps/place/?q=place_id:${place_id}`;
 }
 
 function getDayName(index) {
@@ -121,7 +121,7 @@ function convertTo24(hoursObject) {
     }
 }
 
-module.exports = async function getPopularTimes(placeId, functionOptions) {
+module.exports = async function getPopularTimes(place_id, functionOptions) {
     // set options
 
     let options = {
@@ -136,14 +136,14 @@ module.exports = async function getPopularTimes(placeId, functionOptions) {
     };
     options = { ...options, ...functionOptions };
     // get raw html
-    const rawData = await sendRequest(getHtmlUrl(placeId), options.scraperSettings);
+    const rawData = await sendRequest(getHtmlUrl(place_id), options.scraperSettings);
     // parse html
     const body = new JSDOM(rawData);
     // get days of the week
 
     let days;
 
-    const placeName = await getPlaceName(placeId, options.scraperSettings.config.google_places_api_key);
+    const placeName = await getPlaceName(place_id, options.scraperSettings.config.google_places_api_key);
 
     if (!placeName) {
         console.error(`Did not find a place name using place_id: ${place_id}`)
@@ -260,12 +260,12 @@ module.exports = async function getPopularTimes(placeId, functionOptions) {
     }
 
     if (!!options.debug) {
-        console.log('PlaceID: ', placeId)
+        console.log('PlaceID: ', place_id)
         console.log('Options selected:')
         console.log(options)
         if (options.scraperSettings.engine.toLowerCase() === 'scraperapi') {
             console.log("ScraperAPI URL:")
-            console.log(`http://api.scraperapi.com?api_key=${options.scraperSettings.config.apikey}&render=${options.scraperSettings.config.render}&country_code=us&url=${encodeURIComponent(`https://www.google.com/maps/place/?q=place_id:${placeId}` + "&region=us&language=us&hl=en")}`)
+            console.log(`http://api.scraperapi.com?api_key=${options.scraperSettings.config.apikey}&render=${options.scraperSettings.config.render}&country_code=us&url=${encodeURIComponent(`https://www.google.com/maps/place/?q=place_id:${place_id}` + "&region=us&language=us&hl=en")}`)
         }
         console.log('output: ')
         console.log(out)

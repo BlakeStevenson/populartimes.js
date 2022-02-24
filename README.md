@@ -344,3 +344,16 @@ output is:
 ## Development
 
 When developing in this package, you can run tests using the `/tests.js` file. Use either `node tests` or `npm run tests`.
+
+# Troubleshooting
+
+## Running on Heroku
+
+Puppeteer does not run out of the box on Heroku. To get it working, you will have to pass in options to puppeteer to run headless along with installing the puppeteer heroku buildpack:
+https://stackoverflow.com/questions/63177218/puppeteer-on-heroku-failed-to-launch-the-browser-process
+
+Example of `populartimes` being used in a Heroku hosted app:
+
+```
+populartimes("ChIJEVBPhRQtTIYR9Qn5LawiZIs",{puppeteerOptions: { headless: true, args:['--no-sandbox', '--disable-setuid-sandbox'] }})
+```
