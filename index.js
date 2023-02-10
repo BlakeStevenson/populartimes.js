@@ -98,8 +98,9 @@ async function sendRequest(htmlUrl, scraperSettings) {
             }
         });
 
+        debugMessage(`Running ${scraperSettings.engine}`)
         await page.goto(htmlUrl, { waitUntil: 'networkidle2' });
-        const data = await page.evaluate(() => document.querySelector('*').outerHTML);
+        const data = await page.evaluate(() => document.querySelector('body').outerHTML);
         await browser.close();
 
 
@@ -135,10 +136,26 @@ module.exports = async function getPopularTimes(place_id, functionOptions) {
         }
     };
     options = { ...options, ...functionOptions };
+
+    debugMessage = (message) => {
+        if(options.debug) {
+            console.debug(message)
+        }
+    }
+    
     // get raw html
     const rawData = await sendRequest(getHtmlUrl(place_id), options.scraperSettings);
     // parse html
-    const body = new JSDOM(rawData);
+    console.debug('getting the body')
+    // const virtualConsole = new jsdom.VirtualConsole();
+    // virtualConsole.on("error", () => {
+    //     // No-op to skip console errors.
+    // });
+    // body = new JSDOM("<html><div>test</div><div>what</div>")
+    body = new JSDOM("<html>" + rawData)
+    // const body = new JSDOM(rawData, {virtualConsole});
+    console.debug('got the body')
+    console.debug(getHtmlUrl(place_id))
     // get days of the week
 
     let days;
@@ -149,13 +166,18 @@ module.exports = async function getPopularTimes(place_id, functionOptions) {
         console.error(`Did not find a place name using place_id: ${place_id}`)
         return {}
     } else {
-        if(placeName.indexOf(`"`) > -1) {
-            placeName = placeName.replace(/\"/g,'\\"')
+        if (placeName.indexOf(`"`) > -1) {
+            placeName = placeName.replace(/\"/g, '\\"')
+            placeName = placeName.replace(/\`/g, '\\`')
+            debugMessage('place name is:')
+            debugMessage(placeName)
         }
-        days = body.window.document.querySelectorAll(`div[aria-label="Popular times at ${placeName}"] > div:last-of-type > div`);
-        if(!!days) {
-            
-        }
+
+        let selector = `div[aria-label="Popular times at ${placeName}"] > div:last-of-type > div`
+
+        debugMessage(selector);
+        days = body.window.document.querySelectorAll(selector);
+        debugMessage(days)
     }
 
     // loop through the days
@@ -197,26 +219,59 @@ module.exports = async function getPopularTimes(place_id, functionOptions) {
             let hr = hourEle.getAttribute("aria-label");
             let parts = hr.split(" ");
 
-            if (parts[0] === "Currently" && !!options.getCurrentTime) {
+            if (!!hr.includes("Currently") && !!options.getCurrentTime) {
+                // if `hr` includes the "Currently" word, do this.
+                // hard to say? We should split it and figure this out later
                 out.now = {
                     currently: parts[1],
                     usually: parts[4]
                 }
             }
 
-            if (parts.length < 5) {
-                // if no hours, do nothing
-            } else {
-                let percent = parts[0];
-                let hour = parts[3];
-                let meridiem = parts[4].replace(".", "");
+            // get the percent, meridiem and the hour
+            debugMessage('hr is:', hr)
+            let percent = hr.match(/\d+%?/g);
 
-                if (hour !== 'usually') {
+            if (!!percent) {
+                percent = percent[0];
+            }
+
+            let meridiem = hr.match(/(pm|am)/i)
+            if (!!meridiem) {
+                meridiem = meridiem[0];
+            }
+            
+            let hour = hr.match(/(?<=at )\d+/)
+            if (!!hour) {
+                hour = hour[0];
+            }
+
+            // original code
+            // let percent = parts[0];
+            // let hour = parts[3];
+            // let meridiem = parts[4].replace(".", "");
+
+            if (parts.length < 5 && (
+                !percent || !meridiem || !hour
+            )) {
+                // if no hours, do nothing
+                if(!!options.debug) {
+                    debugMessage('No times detected: ', hr)
+                } else {
+                    console.log('No times detected')
+                }
+            } else {
+
+
+                if (!hr.includes("usually")) {
+                    // if the word 'usually' doesn't exist
                     hoursTracker = hour;
                     meridiemTracker = meridiem;
                 } else {
+                    // else, we gotta do some crazy shit to parse the time.
+                    debugMessage('Debugging: Percent is: ', parts[4])
                     percent = parts[4];
-                    hour = (parseInt(hoursTracker) + 1).toString();
+                    hoursTracker = (parseInt(hour) + 1).toString();
                     if (hoursTracker === '11' && meridiemTracker === 'am') {
                         meridiem = 'pm'
                     } else if (hoursTracker === '11' && meridiemTracker === 'pm') {
@@ -227,6 +282,7 @@ module.exports = async function getPopularTimes(place_id, functionOptions) {
                 }
 
                 let hoursEndObject = { percent, hour, meridiem };
+                debugMessage(hoursEndObject)
                 // if 24 hour format, convert it to 24 hour format
                 if (options.militaryTime) {
                     hoursEndObject = convertTo24(hoursEndObject);
