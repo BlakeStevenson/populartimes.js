@@ -166,6 +166,9 @@ module.exports = async function getPopularTimes(place_id, functionOptions) {
         console.error(`Did not find a place name using place_id: ${place_id}`)
         return {}
     } else {
+        if (placeName.indexOf(`"`) > -1) {
+            placeName = placeName.replace(/\"/g, '\\"')
+            placeName = placeName.replace(/\`/g, '\\`')
             debugMessage('place name is:')
             debugMessage(placeName)
         }
@@ -216,28 +219,59 @@ module.exports = async function getPopularTimes(place_id, functionOptions) {
             let hr = hourEle.getAttribute("aria-label");
             let parts = hr.split(" ");
 
-            if (parts[0] === "Currently" && !!options.getCurrentTime) {
+            if (!!hr.includes("Currently") && !!options.getCurrentTime) {
+                // if `hr` includes the "Currently" word, do this.
+                // hard to say? We should split it and figure this out later
                 out.now = {
                     currently: parts[1],
                     usually: parts[4]
                 }
             }
 
+            // get the percent, meridiem and the hour
             debugMessage('hr is:', hr)
+            let percent = hr.match(/\d+%?/g);
+
+            if (!!percent) {
+                percent = percent[0];
+            }
+
+            let meridiem = hr.match(/(pm|am)/i)
+            if (!!meridiem) {
+                meridiem = meridiem[0];
+            }
+            
+            let hour = hr.match(/(?<=at )\d+/)
+            if (!!hour) {
+                hour = hour[0];
+            }
+
+            // original code
+            // let percent = parts[0];
+            // let hour = parts[3];
+            // let meridiem = parts[4].replace(".", "");
+
+            if (parts.length < 5 && (
+                !percent || !meridiem || !hour
+            )) {
                 // if no hours, do nothing
                 if(!!options.debug) {
                     debugMessage('No times detected: ', hr)
                 } else {
                     console.log('No times detected')
                 }
+            } else {
 
-                if (hour !== 'usually') {
+
+                if (!hr.includes("usually")) {
+                    // if the word 'usually' doesn't exist
                     hoursTracker = hour;
                     meridiemTracker = meridiem;
                 } else {
+                    // else, we gotta do some crazy shit to parse the time.
                     debugMessage('Debugging: Percent is: ', parts[4])
                     percent = parts[4];
-                    hour = (parseInt(hoursTracker) + 1).toString();
+                    hoursTracker = (parseInt(hour) + 1).toString();
                     if (hoursTracker === '11' && meridiemTracker === 'am') {
                         meridiem = 'pm'
                     } else if (hoursTracker === '11' && meridiemTracker === 'pm') {
