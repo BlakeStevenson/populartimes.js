@@ -217,6 +217,7 @@ module.exports = async function getPopularTimes(place_id, functionOptions) {
 
         for (let hourEle of hours) {
             let hr = hourEle.getAttribute("aria-label");
+            hr = hr.replace(/\u202f/, " ");
             let parts = hr.split(" ");
 
             if (!!hr.includes("Currently") && !!options.getCurrentTime) {
