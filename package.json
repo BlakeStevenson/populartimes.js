@@ -26,7 +26,7 @@
   "homepage": "https://github.com/blakestevenson/populartimes.js#readme",
   "dependencies": {
     "@googlemaps/google-maps-services-js": "^3.2.2",
-    "axios": "^0.21.4",
+    "axios": "^1.10.0",
     "jsdom": "^17.0.0",
     "puppeteer": "^3.1.0"
   }
